@@ -44,12 +44,12 @@ By default Coquille forces no mapping for these commands, however two sets of
 mapping are already defined and you can activate them by adding :
 
     " Maps Coquille commands to CoqIDE default key bindings
-    call coquille#CoqideMapping()
+    au FileType coq call coquille#CoqideMapping()
 
 or
 
     " Maps Coquille commands to <F2> (Undo), <F3> (Next), <F4> (ToCursor)
-    call coquille#FNMapping()
+    au FileType coq call coquille#FNMapping()
 
 to your `.vimrc`.
 
