@@ -55,6 +55,13 @@ to your `.vimrc`.
 
 Alternatively you can, of course, define your owns.
 
+Running query commands
+----------------------
+
+You can run an arbitrary query command (that is `Check`, `Print`, etc.) by
+calling `:Coq MyCommand foo bar baz` and the result will be displayed in the
+Infos panel.
+
 Screenshoots
 ------------
 

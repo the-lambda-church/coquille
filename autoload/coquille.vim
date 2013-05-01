@@ -66,6 +66,8 @@ function! coquille#Launch()
     command! -buffer CoqToCursor py coquille.coq_to_cursor()
     command! -buffer CoqKill call coquille#KillSession()
 
+    command! -buffer -nargs=* Coq call coquille#RawQuery(<f-args>)
+
     " Automatically sync the buffer when entering insert mode: this is usefull
     " when we edit the portion of the buffer which has already been sent to coq,
     " we can then rewind to the appropriate point.
