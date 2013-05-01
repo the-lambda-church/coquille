@@ -126,6 +126,9 @@ def coq_next():
 
     (line, col, _)  = encountered_dots[-1] if encountered_dots else (0,0, False)
     message_range = _get_message_range((line, col))
+
+    if message_range is None: return
+
     send_queue.append(message_range)
 
     send_until_fail()
@@ -355,13 +358,16 @@ def _find_next_chunk(line, col):
     by a dot (outside of a comment, and not denoting a path).
     """
     buff = vim.current.buffer
-    if line >= len(buff): return
+    blen = len(buff)
     bullets = ['{', '}', '-', '+', '*']
     # We start by striping all whitespaces (including \n) from the beginning of
     # the chunk.
-    while buff[line][col:].strip() == '':
+    while line < blen and buff[line][col:].strip() == '':
         line += 1
         col = 0
+
+    if line >= blen: return
+
     while buff[line][col] == ' ': # FIXME: keeping the stripped line would be
         col += 1                  #   more efficient.
 
