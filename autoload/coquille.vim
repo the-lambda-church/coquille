@@ -29,21 +29,29 @@ function! coquille#KillSession()
     setlocal ei=InsertEnter
 endfunction
 
+function! coquille#RawQuery(...)
+    py coquille.coq_raw_query(*vim.eval("a:000"))
+endfunction
+
 function! coquille#FNMapping()
     "" --- Function keys bindings
     "" Works under all tested config.
-    map <silent> <F2> :CoqUndo<CR>
-    map <silent> <F3> :CoqNext<CR>
-    map <silent> <F4> :CoqToCursor<CR>
+    map <buffer> <silent> <F2> :CoqUndo<CR>
+    map <buffer> <silent> <F3> :CoqNext<CR>
+    map <buffer> <silent> <F4> :CoqToCursor<CR>
 endfunction
 
 function! coquille#CoqideMapping()
     "" ---  CoqIde key bindings
     "" Unreliable: doesn't work with all terminals, doesn't work through tmux,
     ""  etc.
-    map <silent> <C-A-Up>    :CoqUndo<CR>
-    map <silent> <C-A-Down>  :CoqNext<CR>
-    map <silent> <C-A-Right> :CoqToCursor<CR>
+    map <buffer> <silent> <C-A-Up>    :CoqUndo<CR>
+    map <buffer> <silent> <C-A-Down>  :CoqNext<CR>
+    map <buffer> <silent> <C-A-Right> :CoqToCursor<CR>
+
+    imap <buffer> <silent> <C-A-Up>    :CoqUndo<CR>
+    imap <buffer> <silent> <C-A-Down>  :CoqNext<CR>
+    imap <buffer> <silent> <C-A-Right> :CoqToCursor<CR>
 endfunction
 
 function! coquille#Launch()
@@ -53,10 +61,12 @@ function! coquille#Launch()
     call coquille#ShowPanels()
 
     " make the different commands accessible
-    command! CoqNext py coquille.coq_next()
-    command! CoqUndo py coquille.coq_rewind()
-    command! CoqToCursor py coquille.coq_to_cursor()
-    command! CoqKill call coquille#KillSession()
+    command! -buffer CoqNext py coquille.coq_next()
+    command! -buffer CoqUndo py coquille.coq_rewind()
+    command! -buffer CoqToCursor py coquille.coq_to_cursor()
+    command! -buffer CoqKill call coquille#KillSession()
+
+    command! -buffer -nargs=* Coq call coquille#RawQuery(<f-args>)
 
     " Automatically sync the buffer when entering insert mode: this is usefull
     " when we edit the portion of the buffer which has already been sent to coq,

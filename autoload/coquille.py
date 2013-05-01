@@ -133,6 +133,35 @@ def coq_next():
 
     send_until_fail()
 
+def coq_raw_query(*args):
+    global info_msg
+    if coqtop is None:
+        print("Error: Coqtop isn't running. Are you sure you called :CoqLaunch?")
+        return
+
+    raw_query = ' '.join(args)
+
+    xml = ET.Element('call')
+    xml.set('val', 'interp')
+    xml.set('raw', 'true')
+    xml.text = raw_query
+
+    send_cmd(xml)
+    response = get_answer()
+
+    if response.get('val') == 'good':
+        optionnal_info = response.find('string')
+        if optionnal_info is not None:
+            info_msg = optionnal_info.text
+    elif response.get('val') == 'fail':
+        info_msg = response.text
+        print("FAIL")
+    else:
+        print("(ANOMALY) unknown answer: %s" % ET.tostring(response)) # ugly
+
+    show_info()
+
+
 def launch_coq():
     restart_coq()
 
