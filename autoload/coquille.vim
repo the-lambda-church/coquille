@@ -39,6 +39,10 @@ function! coquille#FNMapping()
     map <buffer> <silent> <F2> :CoqUndo<CR>
     map <buffer> <silent> <F3> :CoqNext<CR>
     map <buffer> <silent> <F4> :CoqToCursor<CR>
+
+    imap <buffer> <silent> <F2> <ESC>:CoqUndo<CR>
+    imap <buffer> <silent> <F3> <ESC>:CoqNext<CR>
+    imap <buffer> <silent> <F4> <ESC>:CoqToCursor<CR>
 endfunction
 
 function! coquille#CoqideMapping()
@@ -46,12 +50,14 @@ function! coquille#CoqideMapping()
     "" Unreliable: doesn't work with all terminals, doesn't work through tmux,
     ""  etc.
     map <buffer> <silent> <C-A-Up>    :CoqUndo<CR>
+    map <buffer> <silent> <C-A-Left>  :CoqUndoToCursor<CR>
     map <buffer> <silent> <C-A-Down>  :CoqNext<CR>
     map <buffer> <silent> <C-A-Right> :CoqToCursor<CR>
 
-    imap <buffer> <silent> <C-A-Up>    :CoqUndo<CR>
-    imap <buffer> <silent> <C-A-Down>  :CoqNext<CR>
-    imap <buffer> <silent> <C-A-Right> :CoqToCursor<CR>
+    imap <buffer> <silent> <C-A-Up>    <ESC>:CoqUndo<CR>
+    imap <buffer> <silent> <C-A-Left>  <ESC>:CoqUndoToCursor<CR>
+    imap <buffer> <silent> <C-A-Down>  <ESC>:CoqNext<CR>
+    imap <buffer> <silent> <C-A-Right> <ESC>:CoqToCursor<CR>
 endfunction
 
 function! coquille#Launch()
@@ -64,6 +70,7 @@ function! coquille#Launch()
     command! -buffer CoqNext py coquille.coq_next()
     command! -buffer CoqUndo py coquille.coq_rewind()
     command! -buffer CoqToCursor py coquille.coq_to_cursor()
+    command! -buffer CoqUndoToCursor py coquille.coq_rewind_to_cursor()
     command! -buffer CoqKill call coquille#KillSession()
 
     command! -buffer -nargs=* Coq call coquille#RawQuery(<f-args>)
