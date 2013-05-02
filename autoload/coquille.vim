@@ -1,4 +1,6 @@
+let s:coq_running=0
 let s:current_dir=expand("<sfile>:p:h") 
+
 " Load vimbufsync if not already done
 call vimbufsync#init()
 
@@ -22,6 +24,8 @@ function! coquille#ShowPanels()
 endfunction
 
 function! coquille#KillSession()
+    let s:coq_running = 0
+
     execute 'bdelete' . s:goal_buf
     execute 'bdelete' . s:info_buf
     py coquille.kill_coqtop()
@@ -61,28 +65,34 @@ function! coquille#CoqideMapping()
 endfunction
 
 function! coquille#Launch()
-    " initialize the plugin (launch coqtop)
-    py coquille.launch_coq()
+    if s:coq_running == 1
+        echo "Coq is already running"
+    else
+        let s:coq_running = 1
 
-    call coquille#ShowPanels()
+        " initialize the plugin (launch coqtop)
+        py coquille.launch_coq()
 
-    " make the different commands accessible
-    command! -buffer CoqNext py coquille.coq_next()
-    command! -buffer CoqUndo py coquille.coq_rewind()
-    command! -buffer CoqToCursor py coquille.coq_to_cursor()
-    command! -buffer CoqUndoToCursor py coquille.coq_rewind_to_cursor()
-    command! -buffer CoqKill call coquille#KillSession()
+        call coquille#ShowPanels()
 
-    command! -buffer -nargs=* Coq call coquille#RawQuery(<f-args>)
+        " make the different commands accessible
+        command! -buffer CoqNext py coquille.coq_next()
+        command! -buffer CoqUndo py coquille.coq_rewind()
+        command! -buffer CoqToCursor py coquille.coq_to_cursor()
+        command! -buffer CoqUndoToCursor py coquille.coq_rewind_to_cursor()
+        command! -buffer CoqKill call coquille#KillSession()
 
-    " Automatically sync the buffer when entering insert mode: this is usefull
-    " when we edit the portion of the buffer which has already been sent to coq,
-    " we can then rewind to the appropriate point.
-    " It's still incomplete though, the plugin won't sync when you undo or
-    " delete some part of your buffer. So the highlighting will be wrong, but
-    " nothing really problematic will happen, as sync will be called the next
-    " time you explicitly call a command (be it 'rewind' or 'interp')
-    au InsertEnter <buffer> py coquille.sync()
+        command! -buffer -nargs=* Coq call coquille#RawQuery(<f-args>)
+
+        " Automatically sync the buffer when entering insert mode: this is usefull
+        " when we edit the portion of the buffer which has already been sent to coq,
+        " we can then rewind to the appropriate point.
+        " It's still incomplete though, the plugin won't sync when you undo or
+        " delete some part of your buffer. So the highlighting will be wrong, but
+        " nothing really problematic will happen, as sync will be called the next
+        " time you explicitly call a command (be it 'rewind' or 'interp')
+        au InsertEnter <buffer> py coquille.sync()
+    endif
 endfunction
 
 function! coquille#Register()
