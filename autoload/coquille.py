@@ -417,20 +417,30 @@ def _find_dot_after(line, col):
     """
     Returns the position of the next "valid" dot after a certain position.
     Valid here means: recognized by Coq as terminating an input, so dots in
-    comments or in ident paths are not valid.
+    comments, strings or ident paths are not valid.
     """
     b = vim.current.buffer
     if line >= len(b): return
     s = b[line][col:]
     dot_pos = s.find('.')
     com_pos = s.find('(*')
-    if com_pos == -1 and dot_pos == -1:
+    str_pos = s.find('"')
+    if com_pos == -1 and dot_pos == -1 and str_pos == -1:
+        # Nothing on this line
         return _find_dot_after(line + 1, 0)
-    elif dot_pos == -1 or (com_pos > -1 and dot_pos > com_pos):
-        com_end = _skip_comment(line, com_pos + 2 + col, 1)
-        if not com_end: return
-        (line, col) = com_end
-        return _find_dot_after(line, col)
+    elif dot_pos == -1 or (com_pos > - 1 and dot_pos > com_pos) or (str_pos > - 1 and dot_pos > str_pos):
+        if str_pos == -1 or (com_pos > -1 and str_pos > com_pos):
+            # We see a comment opening before the next dot
+            com_end = _skip_comment(line, com_pos + 2 + col, 1)
+            if not com_end: return
+            (line, col) = com_end
+            return _find_dot_after(line, col)
+        else:
+            # We see a string starting before the next dot
+            str_end = _skip_str(line, str_pos + col + 1)
+            if not str_end: return
+            (line, col) = str_end
+            return _find_dot_after(line, col)
     elif dot_pos < len(s) - 1 and s[dot_pos + 1] != ' ':
         # Sometimes dot are used to access module fields, we don't want to stop
         # just after the module name.
@@ -441,6 +451,22 @@ def _find_dot_after(line, col):
         return _find_dot_after(line, col + dot_pos + 1)
     else:
         return (line, dot_pos + col)
+
+# TODO? factorize [_skip_str] and [_skip_comment]
+def _skip_str(line, col):
+    """
+    Used when we encountered the start of a string before a valid dot (see
+    [_find_dot_after]).
+    Returns the position of the end of the string.
+    """
+    b = vim.current.buffer
+    if line >= len(b): return
+    s = b[line][col:]
+    str_end = s.find('"')
+    if str_end > -1:
+        return (line, col + str_end + 1)
+    else:
+        return _skip_str(line + 1, 0)
 
 def _skip_comment(line, col, nb_left):
     """
