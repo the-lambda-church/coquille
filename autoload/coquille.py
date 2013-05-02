@@ -74,12 +74,17 @@ def restart_coq():
     except OSError:
         print("Error: couldn't launch coqtop")
 
+# TODO? merge with coq_to_cursor
+def coq_rewind_to_cursor():
+    (line, col) = vim.current.window.cursor
+    rewind_to(line - 1, col)
+
 def coq_rewind(steps=1):
     if coqtop is None:
         print("Error: Coqtop isn't running. Are you sure you called :CoqLaunch?")
         return
 
-    global encountered_dots
+    global encountered_dots, info_msg
 
     request = ET.Element('call')
     request.set('val', 'rewind')
@@ -90,7 +95,11 @@ def coq_rewind(steps=1):
     response = get_answer()
 
     if response.get('val') == 'good':
-        encountered_dots = encountered_dots[:len(encountered_dots) - steps]
+        additional_steps = response.find('int') # should never be none
+        nb_removed = steps + int(additional_steps.text)
+        encountered_dots = encountered_dots[:len(encountered_dots) - nb_removed]
+    else:
+        info_msg = "[COQUILLE ERROR] Unexpected answer:\n\n%s" % ET.tostring(response)
 
     refresh()
 
@@ -102,7 +111,7 @@ def coq_to_cursor():
     sync()
 
     cursor_pos = vim.current.window.cursor
-    (line, col, _)  = encountered_dots[-1] if encountered_dots else (0,0, False)
+    (line, col)  = encountered_dots[-1] if encountered_dots else (0,0)
 
     (cline, ccol) = cursor_pos
 
@@ -124,7 +133,7 @@ def coq_next():
 
     sync()
 
-    (line, col, _)  = encountered_dots[-1] if encountered_dots else (0,0, False)
+    (line, col)  = encountered_dots[-1] if encountered_dots else (0,0)
     message_range = _get_message_range((line, col))
 
     if message_range is None: return
@@ -168,8 +177,8 @@ def launch_coq():
 def debug():
     if encountered_dots:
         print("encountered dots = [")
-        for (line, col, collapsable) in encountered_dots:
-            print("  (%d, %d, %s) ; " % (line, col, collapsable))
+        for (line, col) in encountered_dots:
+            print("  (%d, %d) ; " % (line, col))
         print("]")
 
 #####################################
@@ -247,13 +256,13 @@ def reset_color():
         vim.command('let b:errors = -1')
     # Recolor
     if encountered_dots:
-        (line, col, _) = encountered_dots[-1]
+        (line, col) = encountered_dots[-1]
         start = { 'line': 0 , 'col': 0 }
         stop  = { 'line': line + 1, 'col': col }
         zone = _make_matcher(start, stop)
         vim.command("let b:checked = matchadd('CheckedByCoq', '%s')" % zone)
     if len(send_queue) > 0:
-        (l, c, _) = encountered_dots[-1] if encountered_dots else (0,-1,False)
+        (l, c) = encountered_dots[-1] if encountered_dots else (0,-1)
         r = send_queue.pop()
         send_queue.append(r)
         (line, col) = r['stop']
@@ -276,7 +285,7 @@ def rewind_to(line, col):
         print('Please report.')
         return
 
-    predicate = lambda x: x <= (line, col, True)
+    predicate = lambda x: x <= (line, col)
     lst = filter(predicate, encountered_dots)
     steps = len(encountered_dots) - len(lst)
     coq_rewind(steps)
@@ -308,11 +317,7 @@ def send_until_fail():
 
         if response.get('val') == 'good':
             (eline, ecol) = message_range['stop']
-            if _time_to_collapse(message):
-                idx = rfind(encountered_dots, lambda x: x[2])
-                encountered_dots = encountered_dots[:idx]
-            elt = (eline, ecol + 1, _will_be_collapsed(message))
-            encountered_dots.append(elt)
+            encountered_dots.append((eline, ecol + 1))
 
             optionnal_info = response.find('string')
             if optionnal_info is not None:
