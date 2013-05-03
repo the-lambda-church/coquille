@@ -326,13 +326,14 @@ def send_until_fail():
             send_queue.clear()
             if response.get('val') == 'fail':
                 info_msg = response.text
-                if response.get('loc_s'):
-                    # TODO: get the [optional] offset in the anwser, which is
-                    # exprimed in char, not counting lines and reduce the "error
-                    # highlight zone"
-                    (line, col) = message_range['start']
-                    (eline, ecol) = message_range['stop']
-                    error_at = ((line, col), (eline, ecol))
+                loc_s = response.get('loc_s')
+                if loc_s is not None:
+                    loc_s = int(loc_s)
+                    loc_e = int(response.get('loc_e'))
+                    (l, c) = message_range['start']
+                    (l_start, c_start) = _pos_from_offset(c, xml_template.text, loc_s)
+                    (l_stop, c_stop)   = _pos_from_offset(c, xml_template.text, loc_e)
+                    error_at = ((l + l_start, c_start), (l + l_stop, c_stop))
             elif response.get('val') == 'unsafe':
                 print('wtf does "unsafe" mean?')
             else:
@@ -340,6 +341,13 @@ def send_until_fail():
             break
 
     refresh()
+
+def _pos_from_offset(col, msg, offset):
+    str = msg[:offset]
+    lst = str.split('\n')
+    line = len(lst) - 1
+    col = len(lst[-1]) + (col if line == 0 else 0)
+    return (line, col)
 
 def send_cmd(xml_tree):
     serialized = ET.tostring(xml_tree)
@@ -376,7 +384,7 @@ def _between(begin, end):
     for line, str in enumerate(buf[bline:eline + 1]):
         start = bcol if line == 0 else 0
         stop  = ecol + 1 if line == eline - bline else len(str)
-        acc += str[start:stop]
+        acc += str[start:stop] + '\n'
     return acc
 
 def _get_message_range(after):
