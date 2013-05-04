@@ -456,8 +456,13 @@ def _find_dot_after(line, col):
         # Example: [Require Import Coq.Arith]
         return _find_dot_after(line, col + dot_pos + 1)
     elif dot_pos + col > 0 and b[line][col + dot_pos - 1] == '.':
+        # FIXME? There might be a cleaner way to express this.
         # We don't want to capture ".."
-        return _find_dot_after(line, col + dot_pos + 1)
+        if dot_pos + col > 1 and b[line][col + dot_pos - 2] == '.':
+            # But we want to capture "..."
+            return (line, dot_pos + col)
+        else:
+            return _find_dot_after(line, col + dot_pos + 1)
     else:
         return (line, dot_pos + col)
 
