@@ -236,7 +236,6 @@ def show_info():
     if info_msg is not None:
         lst = info_msg.split('\n')
         buff.append(map(lambda s: s.encode('utf-8'), lst))
-        info_msg = None
 
 def reset_color():
     global error_at
