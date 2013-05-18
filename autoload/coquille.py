@@ -74,11 +74,6 @@ def restart_coq():
     except OSError:
         print("Error: couldn't launch coqtop")
 
-# TODO? merge with coq_to_cursor
-def coq_rewind_to_cursor():
-    (line, col) = vim.current.window.cursor
-    rewind_to(line - 1, col)
-
 def coq_rewind(steps=1):
     if coqtop is None:
         print("Error: Coqtop isn't running. Are you sure you called :CoqLaunch?")
@@ -110,21 +105,22 @@ def coq_to_cursor():
 
     sync()
 
-    cursor_pos = vim.current.window.cursor
+    (cline, ccol) = vim.current.window.cursor
     (line, col)  = encountered_dots[-1] if encountered_dots else (0,0)
 
-    (cline, ccol) = cursor_pos
+    if cline < line or (cline == line and ccol < col):
+        rewind_to(cline - 1, ccol)
+    else:
+        while True:
+            r = _get_message_range((line, col))
+            if r is not None and r['stop'] < (cline - 1, ccol):
+                line = r['stop'][0]
+                col  = r['stop'][1] + 1
+                send_queue.append(r)
+            else:
+                break
 
-    while True:
-        r = _get_message_range((line, col))
-        if r is not None and r['stop'] < (cline - 1, ccol):
-            line = r['stop'][0]
-            col  = r['stop'][1] + 1
-            send_queue.append(r)
-        else:
-            break
-
-    send_until_fail()
+        send_until_fail()
 
 def coq_next():
     if coqtop is None:
