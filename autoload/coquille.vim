@@ -96,7 +96,7 @@ endfunction
 
 function! coquille#Register()
     hi CheckedByCoq ctermbg=17 guibg=LightGreen
-    hi SentToCoq ctermbg=60 guibg=60
+    hi SentToCoq ctermbg=60 guibg=LimeGreen
     hi link CoqError Error
 
     let b:checked = -1
