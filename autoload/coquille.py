@@ -89,6 +89,11 @@ def coq_rewind(steps=1):
 
     response = get_answer()
 
+    if response is None:
+        vim.command("call coquille#KillSession()")
+        print('ERROR: the Coq process died')
+        return
+
     if response.get('val') == 'good':
         additional_steps = response.find('int') # should never be none
         nb_removed = steps + int(additional_steps.text)
@@ -154,6 +159,11 @@ def coq_raw_query(*args):
     send_cmd(xml)
     response = get_answer()
 
+    if response is None:
+        vim.command("call coquille#KillSession()")
+        print('ERROR: the Coq process died')
+        return
+
     if response.get('val') == 'good':
         optionnal_info = response.find('string')
         if optionnal_info is not None:
@@ -200,6 +210,12 @@ def show_goal():
     del buff[:]
 
     shitty_xml = get_answer()
+
+    if shitty_xml is None:
+        vim.command("call coquille#KillSession()")
+        print('ERROR: the Coq process died')
+        return
+
     opt_goal = shitty_xml.find('option')
     if opt_goal is None or opt_goal.get('val') == 'none': return # nothing to do
 
@@ -311,6 +327,11 @@ def send_until_fail():
         send_cmd(xml_template)
         response = get_answer()
 
+        if response is None:
+            vim.command("call coquille#KillSession()")
+            print('ERROR: the Coq process died')
+            return
+
         if response.get('val') == 'good':
             (eline, ecol) = message_range['stop']
             encountered_dots.append((eline, ecol + 1))
@@ -351,6 +372,7 @@ def send_cmd(xml_tree):
 
 def get_answer():
     acc = ''
+    counter = 0
     while True:
         # when read(n) is called, python blocks until n bytes are read. That's
         # why libraries like "expat" are not used here.
@@ -358,11 +380,20 @@ def get_answer():
         tmp = coqtop.stdout.read(1)
         acc += tmp
         if tmp == '>':
-            try:
-                elt = ET.fromstring(acc)
-                return elt
-            except ET.ParseError:
-                continue
+            counter -= 1
+            if counter == 0:
+                try:
+                    elt = ET.fromstring(acc)
+                    return elt
+                except ET.ParseError:
+                    continue
+        elif tmp == '<':
+            counter += 1
+        elif tmp == '':
+            # coqtop died
+            return None
+        else:
+            continue
 
 #################
 # Miscellaneous #
