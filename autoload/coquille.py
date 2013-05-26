@@ -302,6 +302,7 @@ def send_until_fail():
 
     while len(send_queue) > 0:
         reset_color()
+        vim.command('redraw')
 
         message_range = send_queue.popleft()
         message = _between(message_range['start'], message_range['stop'])
