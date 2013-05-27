@@ -1,5 +1,6 @@
 import vim
 
+import os
 import re
 import subprocess
 import xml.etree.ElementTree as ET
@@ -372,28 +373,18 @@ def send_cmd(xml_tree):
 
 def get_answer():
     acc = ''
-    counter = 0
+    fd = coqtop.stdout.fileno()
     while True:
-        # when read(n) is called, python blocks until n bytes are read. That's
-        # why libraries like "expat" are not used here.
-        # And that's the reason of this code. 
-        tmp = coqtop.stdout.read(1)
-        acc += tmp
-        if tmp == '>':
-            counter -= 1
-            if counter == 0:
-                try:
-                    elt = ET.fromstring(acc)
-                    return elt
-                except ET.ParseError:
-                    continue
-        elif tmp == '<':
-            counter += 1
-        elif tmp == '':
+        try:
+            acc += os.read(fd, 0x4000)
+            try:
+                elt = ET.fromstring(acc)
+                return elt
+            except ET.ParseError:
+                continue
+        except OSError:
             # coqtop died
             return None
-        else:
-            continue
 
 #################
 # Miscellaneous #
