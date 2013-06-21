@@ -64,14 +64,14 @@ function! coquille#CoqideMapping()
     imap <buffer> <silent> <C-A-Right> <ESC>:CoqToCursor<CR>a
 endfunction
 
-function! coquille#Launch()
+function! coquille#Launch(...)
     if s:coq_running == 1
         echo "Coq is already running"
     else
         let s:coq_running = 1
 
         " initialize the plugin (launch coqtop)
-        py coquille.launch_coq()
+        py coquille.launch_coq(*vim.eval("a:000"))
 
         call coquille#ShowPanels()
 
@@ -103,5 +103,5 @@ function! coquille#Register()
     let b:sent    = -1
     let b:errors  = -1
 
-    command! -bar -buffer -nargs=0 CoqLaunch call coquille#Launch()
+    command! -bar -buffer -nargs=* CoqLaunch call coquille#Launch(<f-args>)
 endfunction

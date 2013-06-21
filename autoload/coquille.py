@@ -63,12 +63,12 @@ def kill_coqtop():
         coqtop = None
     _reset()
 
-def restart_coq():
+def restart_coq(*args):
     global coqtop
     if coqtop: kill_coqtop()
     try:
         coqtop = subprocess.Popen(
-                ["coqtop", "-ideslave"],
+                ["coqtop", "-ideslave"] + list(args),
                 stdin = subprocess.PIPE,
                 stdout = subprocess.PIPE
                 )
@@ -178,8 +178,8 @@ def coq_raw_query(*args):
     show_info()
 
 
-def launch_coq():
-    restart_coq()
+def launch_coq(*args):
+    restart_coq(*args)
 
 def debug():
     if encountered_dots:
