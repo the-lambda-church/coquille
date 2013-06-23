@@ -4,6 +4,7 @@ import os
 import re
 import subprocess
 import xml.etree.ElementTree as ET
+import signal
 
 from collections import deque
 
@@ -63,6 +64,9 @@ def kill_coqtop():
         coqtop = None
     _reset()
 
+def ignore_sigint():
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
+
 def restart_coq(*args):
     global coqtop
     if coqtop: kill_coqtop()
@@ -70,7 +74,8 @@ def restart_coq(*args):
         coqtop = subprocess.Popen(
                 ["coqtop", "-ideslave"] + list(args),
                 stdin = subprocess.PIPE,
-                stdout = subprocess.PIPE
+                stdout = subprocess.PIPE,
+                preexec_fn = ignore_sigint
                 )
     except OSError:
         print("Error: couldn't launch coqtop")
