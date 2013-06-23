@@ -71,7 +71,7 @@ function! coquille#Launch(...)
         let s:coq_running = 1
 
         " initialize the plugin (launch coqtop)
-        py coquille.launch_coq(*vim.eval("a:000"))
+        py coquille.launch_coq(*vim.eval("map(copy(a:000),'expand(v:val)')"))
 
         call coquille#ShowPanels()
 
@@ -103,5 +103,5 @@ function! coquille#Register()
     let b:sent    = -1
     let b:errors  = -1
 
-    command! -bar -buffer -nargs=* CoqLaunch call coquille#Launch(<f-args>)
+    command! -bar -buffer -nargs=* -complete=file CoqLaunch call coquille#Launch(<f-args>)
 endfunction
