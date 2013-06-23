@@ -4,6 +4,7 @@ import os
 import re
 import subprocess
 import xml.etree.ElementTree as ET
+import signal
 
 from collections import deque
 
@@ -63,14 +64,18 @@ def kill_coqtop():
         coqtop = None
     _reset()
 
-def restart_coq():
+def ignore_sigint():
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
+
+def restart_coq(*args):
     global coqtop
     if coqtop: kill_coqtop()
     try:
         coqtop = subprocess.Popen(
-                ["coqtop", "-ideslave"],
+                ["coqtop", "-ideslave"] + list(args),
                 stdin = subprocess.PIPE,
-                stdout = subprocess.PIPE
+                stdout = subprocess.PIPE,
+                preexec_fn = ignore_sigint
                 )
     except OSError:
         print("Error: couldn't launch coqtop")
@@ -178,8 +183,8 @@ def coq_raw_query(*args):
     show_info()
 
 
-def launch_coq():
-    restart_coq()
+def launch_coq(*args):
+    restart_coq(*args)
 
 def debug():
     if encountered_dots:
