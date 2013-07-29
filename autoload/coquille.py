@@ -160,7 +160,7 @@ def coq_raw_query(*args):
     xml = ET.Element('call')
     xml.set('val', 'interp')
     xml.set('raw', 'true')
-    xml.text = raw_query
+    xml.text = raw_query.decode('utf-8')
 
     send_cmd(xml)
     response = get_answer()
@@ -373,7 +373,7 @@ def _pos_from_offset(col, msg, offset):
     return (line, col)
 
 def send_cmd(xml_tree):
-    serialized = ET.tostring(xml_tree)
+    serialized = ET.tostring(xml_tree, encoding="utf-8")
     coqtop.stdin.write(serialized)
 
 def get_answer():
