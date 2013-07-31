@@ -157,12 +157,14 @@ def coq_raw_query(*args):
 
     raw_query = ' '.join(args)
 
+    encoding = vim.eval("&encoding")
+
     xml = ET.Element('call')
     xml.set('val', 'interp')
     xml.set('raw', 'true')
-    xml.text = raw_query.decode('utf-8')
+    xml.text = raw_query.decode(encoding)
 
-    send_cmd(xml)
+    send_cmd(xml, encoding)
     response = get_answer()
 
     if response is None:
@@ -322,15 +324,17 @@ def send_until_fail():
     xml_template = ET.Element('call')
     xml_template.set('val', 'interp')
 
+    encoding = vim.eval('&fileencoding')
+
     while len(send_queue) > 0:
         reset_color()
         vim.command('redraw')
 
         message_range = send_queue.popleft()
         message = _between(message_range['start'], message_range['stop'])
-        xml_template.text = message.decode('utf-8')
+        xml_template.text = message.decode(encoding)
 
-        send_cmd(xml_template)
+        send_cmd(xml_template, encoding)
         response = get_answer()
 
         if response is None:
@@ -372,8 +376,8 @@ def _pos_from_offset(col, msg, offset):
     col = len(lst[-1]) + (col if line == 0 else 0)
     return (line, col)
 
-def send_cmd(xml_tree):
-    serialized = ET.tostring(xml_tree, encoding="utf-8")
+def send_cmd(xml_tree, encoding='utf-8'):
+    serialized = ET.tostring(xml_tree, encoding)
     coqtop.stdin.write(serialized)
 
 def get_answer():
