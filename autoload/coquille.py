@@ -81,6 +81,9 @@ def restart_coq(*args):
         print("Error: couldn't launch coqtop")
 
 def coq_rewind(steps=1):
+    if steps < 1:
+        return
+
     if coqtop is None:
         print("Error: Coqtop isn't running. Are you sure you called :CoqLaunch?")
         return
