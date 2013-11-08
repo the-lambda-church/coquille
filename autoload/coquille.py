@@ -453,6 +453,16 @@ def _find_next_chunk(line, col):
     if buff[line][col] in bullets:
         return (line, col + 1)
 
+    # We might have a commentary before the bullet, we should be skiping it and
+    # keep on looking.
+    tail_len = len(buff[line]) - col
+    if (tail_len - 1 > 0) and buff[line][col] == '(' and buff[line][col + 1] == '*':
+        com_end = _skip_comment(line, col + 2, 1)
+        if not com_end: return
+        (line, col) = com_end
+        return _find_next_chunk(line, col)
+
+
     # If the chunk doesn't start with a bullet, we look for a dot.
     return _find_dot_after(line, col)
 
