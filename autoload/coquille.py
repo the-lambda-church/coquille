@@ -81,14 +81,14 @@ def restart_coq(*args):
         print("Error: couldn't launch coqtop")
 
 def coq_rewind(steps=1):
-    if steps < 1:
+    global encountered_dots, info_msg
+
+    if steps < 1 or encountered_dots == []:
         return
 
     if coqtop is None:
         print("Error: Coqtop isn't running. Are you sure you called :CoqLaunch?")
         return
-
-    global encountered_dots, info_msg
 
     request = ET.Element('call')
     request.set('val', 'rewind')
