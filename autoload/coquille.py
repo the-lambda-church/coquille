@@ -127,7 +127,7 @@ def coq_to_cursor():
     else:
         while True:
             r = _get_message_range((line, col))
-            if r is not None and r['stop'] < (cline - 1, ccol):
+            if r is not None and r['stop'] <= (cline - 1, ccol):
                 line = r['stop'][0]
                 col  = r['stop'][1] + 1
                 send_queue.append(r)
