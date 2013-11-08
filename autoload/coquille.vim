@@ -73,8 +73,6 @@ function! coquille#Launch(...)
         " initialize the plugin (launch coqtop)
         py coquille.launch_coq(*vim.eval("map(copy(a:000),'expand(v:val)')"))
 
-        call coquille#ShowPanels()
-
         " make the different commands accessible
         command! -buffer CoqNext py coquille.coq_next()
         command! -buffer CoqUndo py coquille.coq_rewind()
@@ -82,6 +80,8 @@ function! coquille#Launch(...)
         command! -buffer CoqKill call coquille#KillSession()
 
         command! -buffer -nargs=* Coq call coquille#RawQuery(<f-args>)
+
+        call coquille#ShowPanels()
 
         " Automatically sync the buffer when entering insert mode: this is usefull
         " when we edit the portion of the buffer which has already been sent to coq,
