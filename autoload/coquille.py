@@ -80,6 +80,10 @@ def restart_coq(*args):
     except OSError:
         print("Error: couldn't launch coqtop")
 
+def goto_last_sent_dot():
+    (line, col) = (0,1) if encountered_dots == [] else encountered_dots[-1]
+    vim.current.window.cursor = (line + 1, col)
+
 def coq_rewind(steps=1):
     global encountered_dots, info_msg
 

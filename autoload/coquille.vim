@@ -74,6 +74,7 @@ function! coquille#Launch(...)
         py coquille.launch_coq(*vim.eval("map(copy(a:000),'expand(v:val)')"))
 
         " make the different commands accessible
+        command! -buffer GotoDot py coquille.goto_last_sent_dot()
         command! -buffer CoqNext py coquille.coq_next()
         command! -buffer CoqUndo py coquille.coq_rewind()
         command! -buffer CoqToCursor py coquille.coq_to_cursor()
