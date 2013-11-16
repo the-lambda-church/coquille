@@ -67,7 +67,7 @@ Screenshoots
 
 Because pictures are always the best sellers :
 
-![Coquille at use](http://195.154.188.33/~rks/coquille.png)
+![Coquille at use](http://195.154.188.33/~trefis/coquille.png)
 
 [1]: https://github.com/tpope/vim-pathogen
 [2]: https://github.com/def-lkb/vimbufsync
