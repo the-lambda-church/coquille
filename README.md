@@ -62,6 +62,15 @@ You can run an arbitrary query command (that is `Check`, `Print`, etc.) by
 calling `:Coq MyCommand foo bar baz` and the result will be displayed in the
 Infos panel.
 
+Configuration
+-------------
+
+You can set the following variable to modify Coquille's behavior:
+
+    g:coquille_auto_move            Set it to 'true' if you want Coquille to
+        (default = 'false')         move your cursor to the end of the lock zone
+                                    after calls to CoqNext or CoqUndo
+
 Screenshoots
 ------------
 
