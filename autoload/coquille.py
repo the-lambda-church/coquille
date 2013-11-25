@@ -116,6 +116,12 @@ def coq_rewind(steps=1):
 
     refresh()
 
+    # steps != 1 means that either the user called "CoqToCursor" or just started
+    # editing in the "locked" zone. In both these cases we don't want to move
+    # the cursor.
+    if (steps == 1 and vim.eval('g:coquille_auto_move') == 'true'):
+        goto_last_sent_dot()
+
 def coq_to_cursor():
     if coqtop is None:
         print("Error: Coqtop isn't running. Are you sure you called :CoqLaunch?")
@@ -155,6 +161,9 @@ def coq_next():
     send_queue.append(message_range)
 
     send_until_fail()
+
+    if (vim.eval('g:coquille_auto_move') == 'true'):
+        goto_last_sent_dot()
 
 def coq_raw_query(*args):
     global info_msg

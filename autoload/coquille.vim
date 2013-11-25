@@ -1,6 +1,10 @@
 let s:coq_running=0
 let s:current_dir=expand("<sfile>:p:h") 
 
+if exists('&coquille_auto_move')
+    let g:coquille_auto_move="false"
+endif
+
 " Load vimbufsync if not already done
 call vimbufsync#init()
 
