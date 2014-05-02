@@ -177,6 +177,7 @@ def coq_raw_query(*args):
 
     xml = ET.Element('call')
     xml.set('val', 'interp')
+    xml.set('id', '0')
     xml.set('raw', 'true')
     xml.text = raw_query.decode(encoding)
 
@@ -339,6 +340,7 @@ def send_until_fail():
 
     xml_template = ET.Element('call')
     xml_template.set('val', 'interp')
+    xml_template.set('id', '0')
 
     encoding = vim.eval('&fileencoding')
 
