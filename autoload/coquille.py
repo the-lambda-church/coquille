@@ -173,7 +173,7 @@ def coq_raw_query(*args):
 
     raw_query = ' '.join(args)
 
-    encoding = vim.eval("&encoding")
+    encoding = vim.eval("&encoding") or 'utf-8'
 
     xml = ET.Element('call')
     xml.set('val', 'interp')
@@ -342,7 +342,7 @@ def send_until_fail():
     xml_template.set('val', 'interp')
     xml_template.set('id', '0')
 
-    encoding = vim.eval('&fileencoding')
+    encoding = vim.eval('&fileencoding') or 'utf-8'
 
     while len(send_queue) > 0:
         reset_color()
