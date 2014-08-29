@@ -71,12 +71,20 @@ def restart_coq(*args):
     global coqtop
     if coqtop: kill_coqtop()
     try:
-        coqtop = subprocess.Popen(
-                ["coqtop", "-ideslave"] + list(args),
-                stdin = subprocess.PIPE,
-                stdout = subprocess.PIPE,
-                preexec_fn = ignore_sigint
-                )
+        if os.name == 'nt':
+            coqtop = subprocess.Popen(
+                    ["coqtop", "-ideslave"] + list(args),
+                    stdin = subprocess.PIPE,
+                    stdout = subprocess.PIPE,
+                    stderr = subprocess.STDOUT
+                    )
+        else:
+           coqtop = subprocess.Popen(
+                    ["coqtop", "-ideslave"] + list(args),
+                    stdin = subprocess.PIPE,
+                    stdout = subprocess.PIPE,
+                    preexec_fn = ignore_sigint
+                    )
     except OSError:
         print("Error: couldn't launch coqtop")
 
