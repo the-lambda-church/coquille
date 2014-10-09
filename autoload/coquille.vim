@@ -48,9 +48,9 @@ function! coquille#FNMapping()
     map <buffer> <silent> <F3> :CoqNext<CR>
     map <buffer> <silent> <F4> :CoqToCursor<CR>
 
-    imap <buffer> <silent> <F2> <ESC>:CoqUndo<CR>a
-    imap <buffer> <silent> <F3> <ESC>:CoqNext<CR>a
-    imap <buffer> <silent> <F4> <ESC>:CoqToCursor<CR>a
+    imap <buffer> <silent> <F2> <C-\><C-o>:CoqUndo<CR>
+    imap <buffer> <silent> <F3> <C-\><C-o>:CoqNext<CR>
+    imap <buffer> <silent> <F4> <C-\><C-o>:CoqToCursor<CR>
 endfunction
 
 function! coquille#CoqideMapping()
@@ -62,10 +62,10 @@ function! coquille#CoqideMapping()
     map <buffer> <silent> <C-A-Down>  :CoqNext<CR>
     map <buffer> <silent> <C-A-Right> :CoqToCursor<CR>
 
-    imap <buffer> <silent> <C-A-Up>    <ESC>:CoqUndo<CR>a
-    imap <buffer> <silent> <C-A-Left>  <ESC>:CoqToCursor<CR>a
-    imap <buffer> <silent> <C-A-Down>  <ESC>:CoqNext<CR>a
-    imap <buffer> <silent> <C-A-Right> <ESC>:CoqToCursor<CR>a
+    imap <buffer> <silent> <C-A-Up>    <C-\><C-o>:CoqUndo<CR>
+    imap <buffer> <silent> <C-A-Left>  <C-\><C-o>:CoqToCursor<CR>
+    imap <buffer> <silent> <C-A-Down>  <C-\><C-o>:CoqNext<CR>
+    imap <buffer> <silent> <C-A-Right> <C-\><C-o>:CoqToCursor<CR>
 endfunction
 
 function! coquille#Launch(...)
