@@ -8,7 +8,7 @@ Installation
 ------------
 
 This repository is meant to be used as a [pathogen][1] bundle. If you don't
-already use pathogen, I strongly recommand that you start right now.
+already use pathogen, I strongly recommend that you start right now.
 
 As everybody knows, vim is a wonderful editor which offers no way for a plugin
 to track modifications on a buffer. For that reason Coquille depends on a set of
