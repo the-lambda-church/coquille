@@ -36,15 +36,9 @@ endif
 " Coq is case sensitive.
 syn case match
 
-syn cluster coqVernac contains=coqRequire,coqCheck,coqEval,coqNotation,coqTacNotation,coqDecl,coqThm,coqLtacDecl,coqDef,coqFix,coqInd,coqRec,coqShow
-
 " Various
 syn match   coqVernacPunctuation ":=\|\.\|:"
 syn match   coqIdent             contained "[_[:alpha:]][_'[:alnum:]]*"
-syn keyword coqTopLevel          Declare Type Canonical Structure Cd Coercion Derive Drop Existential
-"...
-syn keyword coqVernacCmd         Functional Scheme Back Combined
-syn keyword coqFeedback          Show About Print
 
 " Terms
 syn cluster coqTerm            contains=coqKwd,coqTermPunctuation,coqKwdMatch,coqKwdLet,coqKwdParen
@@ -61,9 +55,12 @@ syn match coqTermPunctuation   contained ":=\|:>\|:\|;\|,\|||\|\[\|\]\|@\|?\|\<_
 syn region coqComputed  contains=@coqTerm matchgroup=coqVernacPunctuation start="^\s*=" matchgroup=NONE end="^$"
 
 " Definitions
-syn region coqDefName          start="[_[:alpha:]][_'[:alnum:]]*" skip="\%(=\|:\)" end="\%(=\|:\)"me=e-1 contains=coqDefContents1,coqDefContents2
-syn region coqDefContents1     contained contains=@coqTerm matchgroup=coqVernacPunctuation start=":" matchgroup=NONE end="^$"  matchgroup=NONE end="^\S"me=e-1
-syn region coqDefContents2     contained contains=@coqTerm matchgroup=coqVernacPunctuation start="=" matchgroup=NONE end="^$"
+syn match coqDefName          "[_[:alpha:]][_'[:alnum:]]*\_.\{-}\%(=\|:\)" contains=@coqTerm,coqDefContents1,coqDefContents2
+syn region coqDefContents1     contained contains=@coqTerm matchgroup=coqVernacPunctuation start=":" matchgroup=NONE end="^$" end="^\S"me=e-1
+syn region coqDefContents2     contained contains=@coqTerm matchgroup=coqVernacPunctuation start="=" matchgroup=NONE end="^$" end="^\S"me=e-1
+
+syn region coqDefNameHidden     matchgroup=coqComment start="\*\*\* \[" matchgroup=coqComment end="\]" contains=@coqTerm,coqDefContents3
+syn region coqDefContents3     contained contains=@coqTerm matchgroup=coqVernacPunctuation start=":" end="]"me=e-1
 
 " Notations
 syn region coqNotationDef       contains=coqNotationString,coqNotationTerm matchgroup=coqVernacCmd start="\<Notation\>\%(\s*\<Scope\>\)\?" end="^$"
@@ -71,18 +68,13 @@ syn region coqNotationTerm      contained matchgroup=coqVernacPunctuation start=
 syn region coqNotationScope     contained contains=@coqTerm,coqNotationFormat matchgroup=coqVernacPunctuation start=":" end="\""me=e-1 end="^$"
 syn region coqNotationFormat    contained contains=coqNotationKwd,coqString matchgroup=coqVernacPunctuation start="(" end=")"
 
-syn match   coqNotationKwd contained "at \(next \)\?level"
-syn match   coqNotationKwd contained "\(no\|left\|right\) associativity"
-syn match   coqNotationKwd contained "only parsing"
-syn match   coqNotationKwd contained "default interpretation"
-syn match   coqNotationKwd contained "(\|,\|)\|:"
-syn keyword coqNotationKwd contained ident global bigint format
+syn match  coqNotationKwd    contained "default interpretation"
 
 syn region coqNotationString contained start=+"+ skip=+""+ end=+"+ extend
 
 "Inductives and Constants
-syn region coqInd            contains=coqIndBody start="\<\%(\%(Co\)\?Inductive\|Constant\)\>" matchgroup=coqVernacPunctuation end="^\S"me=e-1 keepend
-syn region coqIndBody     contained contains=coqIdent,coqIndTerm,coqIndBinder matchgroup=coqVernacCmd start="\%(Co\)\?Inductive\|Constant" start="\<with\>" matchgroup=NONE end="^\S"me=e-1
+syn region coqInd            contains=coqIndBody start="\<\%(\%(Co\)\?Inductive\|Constant\)\>" end="^\S"me=e-1 end="^$" keepend
+syn region coqIndBody        contained contains=coqIdent,coqIndTerm,coqIndBinder matchgroup=coqVernacCmd start="\%(Co\)\?Inductive\|Constant" start="\<with\>" matchgroup=NONE end="^\S"me=e-1
 syn region coqIndBinder      contained contains=coqIndBinderTerm matchgroup=coqVernacPunctuation start="("  end=")" keepend
 syn region coqIndBinderTerm  contained contains=@coqTerm matchgroup=coqVernacPunctuation start=":" end=")"
 syn region coqIndTerm        contained contains=@coqTerm,coqIndContent matchgroup=coqVernacPunctuation start=":" matchgroup=NONE end="^\S"me=e-1
@@ -105,6 +97,11 @@ syn region coqRecField   contained contains=coqField matchgroup=coqVernacPunctua
 syn region coqRecField   contained contains=coqField matchgroup=coqVernacPunctuation start=";" end=":"
 syn match coqField       contained "[_[:alpha:]][_'[:alnum:]]*"
 
+" Arguments specification
+syn region  coqArgumentSpecification start="^\%(For \_.\{-}:\)\?\s*Argument" end="implicit" contains=@coqTerm,coqArgumentSpecificationKeywords
+syn region  coqArgumentScopeSpecification start="^\%(For \_.\{-}:\)\?\s*Argument scopes\?" end="\]" contains=@coqTerm,coqArgumentSpecificationKeywords
+syn keyword coqArgumentSpecificationKeywords contained Argument Arguments is are scope scopes implicit For and maximally inserted when applied to argument arguments
+
 " Warning and errors
 syn match   coqBad               contained ".*\%(w\|W\)arnings\?"
 syn match   coqVeryBad           contained ".*\%(e\|E\)rrors\?"
@@ -123,27 +120,13 @@ syn sync maxlines=500
 " Define the default highlighting.
 " For version 5.7 and earlier: only when not done already
 " For version 5.8 and later: only when an item doesn't have highlighting yet
-if version >= 508 || !exists("did_coq_syntax_inits")
+if version >= 508 || !exists("did_coq_infos_syntax_inits")
  if version < 508
-  let did_coq_syntax_inits = 1
+  let did_coq_infos_syntax_inits = 1
   command -nargs=+ HiLink hi link <args>
  else
   command -nargs=+ HiLink hi def link <args>
  endif
-
- " PROOFS
- HiLink coqTactic                    Keyword
- HiLink coqLtac coqTactic
- HiLink coqProofKwd coqTactic
- HiLink coqProofPunctuation coqTactic
- HiLink coqTacticKwd coqTactic
- HiLink coqTacNotationKwd coqTactic
- HiLink coqEvalFlag coqTactic
- " Exception
- HiLink coqProofDot coqVernacular
-
- " PROOF DELIMITERS ("Proof", "Qed", "Defined", "Save")
- HiLink coqProofDelim                Underlined
 
  " TERMS AND TYPES
  HiLink coqTerm                      Type
@@ -151,16 +134,13 @@ if version >= 508 || !exists("did_coq_syntax_inits")
  HiLink coqTermPunctuation coqTerm
 
  " VERNACULAR COMMANDS
- HiLink coqVernacular                PreProc
  HiLink coqVernacCmd         coqVernacular
  HiLink coqVernacPunctuation coqVernacular
- HiLink coqHint              coqVernacular
- HiLink coqFeedback          coqVernacular
- HiLink coqTopLevel          coqVernacular
 
  " DEFINED OBJECTS
  HiLink coqIdent                     Identifier
  HiLink coqDefName                   Identifier
+ HiLink coqDefNameHidden             Identifier
  HiLink coqNotationString coqIdent
 
  " CONSTRUCTORS AND FIELDS
@@ -169,6 +149,9 @@ if version >= 508 || !exists("did_coq_syntax_inits")
 
  " NOTATION SPECIFIC ("at level", "format", etc)
  HiLink coqNotationKwd               Special
+
+ " ARGUMENT SPECIFICATIONS (SCOPES...)
+ HiLink coqArgumentSpecificationKeywords      Underlined
 
  " WARNINGS AND ERRORS
  HiLink coqBad                       WarningMsg
