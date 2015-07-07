@@ -18,6 +18,7 @@ function! coquille#ShowPanels()
     let l:winnb = winnr()
     rightbelow vnew Goals
         setlocal buftype=nofile
+        setlocal filetype=coq-goals
         setlocal noswapfile
         let s:goal_buf = bufnr("%")
     rightbelow new Infos
