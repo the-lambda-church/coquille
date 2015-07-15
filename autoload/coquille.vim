@@ -23,6 +23,7 @@ function! coquille#ShowPanels()
         let s:goal_buf = bufnr("%")
     rightbelow new Infos
         setlocal buftype=nofile
+        setlocal filetype=coq-infos
         setlocal noswapfile
         let s:info_buf = bufnr("%")
     execute l:winnb . 'winc w'
