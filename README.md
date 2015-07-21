@@ -65,6 +65,12 @@ Infos panel.
 Configuration
 -------------
 
+Note that the color of the "lock zone" is hard coded and might not be pretty in
+your specific setup (depending on your terminal, colorscheme, etc).
+To change it, you can overwrite the `CheckedByCoq` and `SentToCoq` highlight
+groups (`:h hi` and `:h highlight-groups`) to colors that works better for you.
+See [coquille.vim][5] for an example.
+
 You can set the following variable to modify Coquille's behavior:
 
     g:coquille_auto_move            Set it to 'true' if you want Coquille to
@@ -76,9 +82,10 @@ Screenshoots
 
 Because pictures are always the best sellers :
 
-![Coquille at use](http://88.191.77.33/~rks/coquille.png)
+![Coquille at use](http://the-lambda-church.github.io/coquille/coquille.png)
 
 [1]: https://github.com/tpope/vim-pathogen
 [2]: https://github.com/def-lkb/vimbufsync
 [3]: http://www.vim.org/scripts/script.php?script_id=2063 "coq syntax on vim.org"
 [4]: http://www.vim.org/scripts/script.php?script_id=2079 "coq indent on vim.org"
+[5]: https://github.com/the-lambda-church/coquille/blob/master/autoload/coquille.vim#L103
