@@ -5,6 +5,7 @@ import re
 import subprocess
 import xml.etree.ElementTree as ET
 import signal
+import coqtop as CT
 
 from collections import deque
 
@@ -54,14 +55,7 @@ def _reset():
 #####################
 
 def kill_coqtop():
-    global coqtop
-    if coqtop:
-        try:
-            coqtop.terminate()
-            coqtop.communicate()
-        except OSError:
-            pass
-        coqtop = None
+    CT.kill_coqtop()
     _reset()
 
 def ignore_sigint():
@@ -147,7 +141,7 @@ def coq_to_cursor():
         send_until_fail()
 
 def coq_next():
-    if coqtop is None:
+    if CT.coqtop is None:
         print("Error: Coqtop isn't running. Are you sure you called :CoqLaunch?")
         return
 
@@ -203,7 +197,7 @@ def coq_raw_query(*args):
 
 
 def launch_coq(*args):
-    restart_coq(*args)
+    CT.restart_coq(*args)
 
 def debug():
     if encountered_dots:
@@ -217,7 +211,7 @@ def debug():
 #####################################
 
 def refresh():
-    show_goal()
+    #show_goal()
     show_info()
     reset_color()
 
@@ -338,11 +332,7 @@ def send_until_fail():
     """
     global encountered_dots, error_at, info_msg
 
-    xml_template = ET.Element('call')
-    xml_template.set('val', 'interp')
-    xml_template.set('id', '0')
-
-    encoding = vim.eval('&fileencoding')
+    encoding = vim.eval('&fileencoding') or 'utf-8'
 
     while len(send_queue) > 0:
         reset_color()
@@ -350,37 +340,34 @@ def send_until_fail():
 
         message_range = send_queue.popleft()
         message = _between(message_range['start'], message_range['stop'])
-        xml_template.text = message.decode(encoding)
 
-        send_cmd(xml_template, encoding)
-        response = get_answer()
+        response = CT.advance(message, encoding)
 
         if response is None:
             vim.command("call coquille#KillSession()")
             print('ERROR: the Coq process died')
             return
 
-        if response.get('val') == 'good':
+        if isinstance(response, CT.Ok):
             (eline, ecol) = message_range['stop']
             encountered_dots.append((eline, ecol + 1))
 
-            optionnal_info = response.find('string')
-            if optionnal_info is not None:
-                info_msg = optionnal_info.text
+            optionnal_info = response.val[1]
+            if len(response.val) > 1 and isinstance(response.val[1], tuple):
+                info_msg = response.val[1][1]
         else:
             send_queue.clear()
-            if response.get('val') == 'fail':
-                info_msg = response.text
+            if isinstance(response, CT.Err):
+                response = response.err
+                info_msg = response.text.strip()
                 loc_s = response.get('loc_s')
                 if loc_s is not None:
                     loc_s = int(loc_s)
                     loc_e = int(response.get('loc_e'))
                     (l, c) = message_range['start']
-                    (l_start, c_start) = _pos_from_offset(c, xml_template.text, loc_s)
-                    (l_stop, c_stop)   = _pos_from_offset(c, xml_template.text, loc_e)
+                    (l_start, c_start) = _pos_from_offset(c, cmd, loc_s)
+                    (l_stop, c_stop)   = _pos_from_offset(c, cmd, loc_e)
                     error_at = ((l + l_start, c_start), (l + l_stop, c_stop))
-            elif response.get('val') == 'unsafe':
-                print('wtf does "unsafe" mean?')
             else:
                 print("(ANOMALY) unknown answer: %s" % ET.tostring(response))
             break
