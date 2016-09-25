@@ -233,6 +233,8 @@ def cur_state():
 
 def advance(cmd, encoding = 'utf-8'):
     r = call('Add', ((cmd, -1), (cur_state(), True)), encoding)
+    if r is None:
+        return r
     if isinstance(r, Err):
         return r
     s = r.val[0]
@@ -240,23 +242,22 @@ def advance(cmd, encoding = 'utf-8'):
     return r
 
 def goals():
-    r = call('Goal', ())
+    return call('Goal', ())
+
+def print_goals():
+    r = goals()
+    if r is None:
+        return r
     if isinstance(r, Err):
-        r = r.err
-        info_msg = r.text.strip()
-        loc_s = r.get('loc_s')
-        if loc_s is not None:
-            loc_s = int(loc_s)
-            loc_e = int(r.get('loc_e'))
-            print "error:", loc_s, loc_e, info_msg
         return r
 
     if r.val.val is None:
         print "no goals"
-        return
+        return r
 
-    goals = r.val.val
-    print "goals =>", goals
+    gs = r.val.val
+    print "goals =>", gs
+    return r
 
 if __name__ == '__main__':
     launch_coq()
@@ -272,23 +273,23 @@ if __name__ == '__main__':
     cmd9 = "Qed."
 
     advance(cmd1)
-    goals()
+    print_goals()
     advance(cmd2)
-    goals()
+    print_goals()
     advance(cmd3)
-    goals()
+    print_goals()
     advance(cmd4)
-    goals()
+    print_goals()
     advance(cmd5)
-    goals()
+    print_goals()
     advance(cmd6)
-    goals()
+    print_goals()
     advance(cmd7)
-    goals()
+    print_goals()
     advance(cmd8)
-    goals()
+    print_goals()
     advance(cmd9)
-    goals()
+    print_goals()
 
     print(states)
 

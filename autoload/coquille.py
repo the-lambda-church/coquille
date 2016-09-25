@@ -211,16 +211,11 @@ def debug():
 #####################################
 
 def refresh():
-    #show_goal()
+    show_goal()
     show_info()
     reset_color()
 
 def show_goal():
-    cmd = ET.Element('call')
-    cmd.set('val', 'goal')
-
-    send_cmd(cmd)
-
     buff = None
     for b in vim.buffers:
         if re.match(".*Goals$", b.name):
@@ -228,33 +223,37 @@ def show_goal():
             break
     del buff[:]
 
-    shitty_xml = get_answer()
+    response = CT.goals()
 
-    if shitty_xml is None:
+    if response is None:
         vim.command("call coquille#KillSession()")
         print('ERROR: the Coq process died')
         return
 
-    opt_goal = shitty_xml.find('option')
-    if opt_goal is None or opt_goal.get('val') == 'none': return # nothing to do
+    if response.val.val is None:
+        buff.append('No goals.')
+        return
 
-    sub_goals = list(opt_goal.find('goals').find('list')) # there are only 2 of these
-    # and the second one is empty. Cheers.
+    goals = response.val.val
+
+    sub_goals = goals.fg
 
     nb_subgoals = len(sub_goals)
     plural_opt = '' if nb_subgoals == 1 else 's'
     buff.append(['%d subgoal%s' % (nb_subgoals, plural_opt), ''])
 
     for idx, sub_goal in enumerate(sub_goals):
-        [ _id, hyps , ccl ] = list(sub_goal)
+        _id = sub_goal.id
+        hyps = sub_goal.hyp
+        ccl = sub_goal.ccl
         if idx == 0:
             # we print the environment only for the current subgoal
-            for hyp in list(hyps):
-                lst = map(lambda s: s.encode('utf-8'), hyp.text.split('\n'))
+            for hyp in hyps:
+                lst = map(lambda s: s.encode('utf-8'), hyp.split('\n'))
                 buff.append(lst)
         buff.append('')
         buff.append('======================== ( %d / %d )' % (idx+1 , nb_subgoals))
-        lines = map(lambda s: s.encode('utf-8'), ccl.text.split('\n'))
+        lines = map(lambda s: s.encode('utf-8'), ccl.split('\n'))
         buff.append(lines)
         buff.append('')
 
