@@ -12,9 +12,6 @@ from collections import deque
 import vimbufsync
 vimbufsync.check_version("0.1.0", who="coquille")
 
-#: Pipe used to discuss with coqtop
-coqtop = None
-
 #: See vimbufsync ( https://github.com/def-lkb/vimbufsync )
 saved_sync = None
 
@@ -58,22 +55,6 @@ def kill_coqtop():
     CT.kill_coqtop()
     _reset()
 
-def ignore_sigint():
-    signal.signal(signal.SIGINT, signal.SIG_IGN)
-
-def restart_coq(*args):
-    global coqtop
-    if coqtop: kill_coqtop()
-    try:
-        coqtop = subprocess.Popen(
-                ["coqtop", "-ideslave"] + list(args),
-                stdin = subprocess.PIPE,
-                stdout = subprocess.PIPE,
-                preexec_fn = ignore_sigint
-                )
-    except OSError:
-        print("Error: couldn't launch coqtop")
-
 def goto_last_sent_dot():
     (line, col) = (0,1) if encountered_dots == [] else encountered_dots[-1]
     vim.current.window.cursor = (line + 1, col)
@@ -109,7 +90,7 @@ def coq_rewind(steps=1):
         goto_last_sent_dot()
 
 def coq_to_cursor():
-    if coqtop is None:
+    if CT.coqtop is None:
         print("Error: Coqtop isn't running. Are you sure you called :CoqLaunch?")
         return
 
@@ -153,7 +134,7 @@ def coq_next():
 
 def coq_raw_query(*args):
     global info_msg
-    if coqtop is None:
+    if CT.coqtop is None:
         print("Error: Coqtop isn't running. Are you sure you called :CoqLaunch?")
         return
 
@@ -300,7 +281,7 @@ def reset_color():
         error_at = None
 
 def rewind_to(line, col):
-    if coqtop is None:
+    if CT.coqtop is None:
         print('Internal error: vimbufsync is still being called but coqtop\
                 appears to be down.')
         print('Please report.')
@@ -356,8 +337,8 @@ def send_until_fail():
                     loc_s = int(loc_s)
                     loc_e = int(response.get('loc_e'))
                     (l, c) = message_range['start']
-                    (l_start, c_start) = _pos_from_offset(c, cmd, loc_s)
-                    (l_stop, c_stop)   = _pos_from_offset(c, cmd, loc_e)
+                    (l_start, c_start) = _pos_from_offset(c, message, loc_s)
+                    (l_stop, c_stop)   = _pos_from_offset(c, message, loc_e)
                     error_at = ((l + l_start, c_start), (l + l_stop, c_stop))
             else:
                 print("(ANOMALY) unknown answer: %s" % ET.tostring(response))
@@ -371,25 +352,6 @@ def _pos_from_offset(col, msg, offset):
     line = len(lst) - 1
     col = len(lst[-1]) + (col if line == 0 else 0)
     return (line, col)
-
-def send_cmd(xml_tree, encoding='utf-8'):
-    serialized = ET.tostring(xml_tree, encoding)
-    coqtop.stdin.write(serialized)
-
-def get_answer():
-    acc = ''
-    fd = coqtop.stdout.fileno()
-    while True:
-        try:
-            acc += os.read(fd, 0x4000)
-            try:
-                elt = ET.fromstring(acc)
-                return elt
-            except ET.ParseError:
-                continue
-        except OSError:
-            # coqtop died
-            return None
 
 #################
 # Miscellaneous #
