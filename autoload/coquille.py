@@ -84,29 +84,21 @@ def coq_rewind(steps=1):
     if steps < 1 or encountered_dots == []:
         return
 
-    if coqtop is None:
+    if CT.coqtop is None:
         print("Error: Coqtop isn't running. Are you sure you called :CoqLaunch?")
         return
 
-    request = ET.Element('call')
-    request.set('val', 'rewind')
-    request.set('steps', str(steps))
-
-    send_cmd(request)
-
-    response = get_answer()
+    response = CT.rewind(steps)
 
     if response is None:
         vim.command("call coquille#KillSession()")
         print('ERROR: the Coq process died')
         return
 
-    if response.get('val') == 'good':
-        additional_steps = response.find('int') # should never be none
-        nb_removed = steps + int(additional_steps.text)
-        encountered_dots = encountered_dots[:len(encountered_dots) - nb_removed]
+    if isinstance(response, CT.Ok):
+        encountered_dots = encountered_dots[:len(encountered_dots) - steps]
     else:
-        info_msg = "[COQUILLE ERROR] Unexpected answer:\n\n%s" % ET.tostring(response)
+        info_msg = "[COQUILLE ERROR] Unexpected answer:\n\n%s" % response
 
     refresh()
 

@@ -137,6 +137,7 @@ def encode_value(v):
 
 coqtop = None
 states = []
+state_id = None
 root_state = None
 
 def kill_coqtop():
@@ -191,7 +192,7 @@ def send_cmd(cmd):
     coqtop.stdin.write(cmd)
 
 def restart_coq(*args):
-    global coqtop, root_state
+    global coqtop, root_state, state_id
     if coqtop: kill_coqtop()
     options = [ 'coqtop'
               , '-ideslave'
@@ -219,6 +220,7 @@ def restart_coq(*args):
         r = call('Init', Option(None))
         assert isinstance(r, Ok)
         root_state = r.val
+        state_id = r.val
     except OSError:
         print("Error: couldn't launch coqtop")
 
@@ -229,17 +231,26 @@ def cur_state():
     if len(states) == 0:
         return root_state
     else:
-        return states[-1]
+        return state_id
 
 def advance(cmd, encoding = 'utf-8'):
+    global state_id
     r = call('Add', ((cmd, -1), (cur_state(), True)), encoding)
     if r is None:
         return r
     if isinstance(r, Err):
         return r
-    s = r.val[0]
-    states.append(s)
+    states.append(state_id)
+    state_id = r.val[0]
     return r
+
+def rewind(step = 1):
+    global states, state_id
+    assert step <= len(states)
+    idx = len(states) - step
+    state_id = states[idx]
+    states = states[0:idx]
+    return call('Edit_at', state_id)
 
 def goals():
     return call('Goal', ())
@@ -284,6 +295,25 @@ if __name__ == '__main__':
     print_goals()
     advance(cmd6)
     print_goals()
+    advance(cmd7)
+    print_goals()
+    advance(cmd8)
+    print_goals()
+    advance(cmd9)
+    print_goals()
+
+    print(states)
+
+    rewind()
+    print_goals()
+    rewind()
+    print_goals()
+    rewind()
+    print_goals()
+
+    print(states)
+    print(cur_state())
+
     advance(cmd7)
     print_goals()
     advance(cmd8)
