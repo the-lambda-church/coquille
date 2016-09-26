@@ -6,7 +6,7 @@ import signal
 
 from collections import deque, namedtuple
 
-Ok = namedtuple('Ok', ['val'])
+Ok = namedtuple('Ok', ['val', 'msg'])
 Err = namedtuple('Err', ['err'])
 
 Inl = namedtuple('Inl', ['val'])
@@ -27,7 +27,7 @@ Evar = namedtuple('Evar', ['info'])
 def parse_response(xml):
     assert xml.tag == 'value'
     if xml.get('val') == 'good':
-        return Ok(parse_value(xml[0]))
+        return Ok(parse_value(xml[0]), None)
     elif xml.get('val') == 'fail':
         print('err: %s' % ET.tostring(xml))
         return Err(parse_error(xml))
@@ -159,6 +159,7 @@ def escape(cmd):
 def get_answer():
     acc = ''
     fd = coqtop.stdout.fileno()
+    messageNode = None
     while True:
         try:
             data = os.read(fd, 0x4000)
@@ -171,10 +172,16 @@ def get_answer():
                     if c.tag == 'value':
                         shouldWait = False
                         valueNode = c
+                    if c.tag == 'message':
+                        messageNode = c[1]
                 if shouldWait:
                     continue
                 else:
-                    return parse_response(valueNode)
+                    vp = parse_response(valueNode)
+                    if messageNode is not None:
+                        if isinstance(vp, Ok):
+                            return Ok(vp.val, parse_value(messageNode))
+                    return vp
             except ET.ParseError:
                 continue
         except OSError:
@@ -261,6 +268,9 @@ def print_goals():
         return r
     if isinstance(r, Err):
         return r
+
+    if r.msg is not None:
+        print "message =>", r.msg
 
     if r.val.val is None:
         print "no goals"
