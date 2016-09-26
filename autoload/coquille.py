@@ -1,10 +1,7 @@
 import vim
 
-import os
 import re
-import subprocess
 import xml.etree.ElementTree as ET
-import signal
 import coqtop as CT
 
 from collections import deque
@@ -60,6 +57,8 @@ def goto_last_sent_dot():
     vim.current.window.cursor = (line + 1, col)
 
 def coq_rewind(steps=1):
+    clear_info()
+
     global encountered_dots, info_msg
 
     if steps < 1 or encountered_dots == []:
@@ -133,6 +132,8 @@ def coq_next():
         goto_last_sent_dot()
 
 def coq_raw_query(*args):
+    clear_info()
+
     global info_msg
     if CT.coqtop is None:
         print("Error: Coqtop isn't running. Are you sure you called :CoqLaunch?")
@@ -241,6 +242,11 @@ def show_info():
         lst = info_msg.split('\n')
         buff.append(map(lambda s: s.encode('utf-8'), lst))
 
+def clear_info():
+    global info_msg
+    info_msg = ''
+    show_info()
+
 def reset_color():
     global error_at
     # Clear current coloring (dirty)
@@ -299,6 +305,8 @@ def send_until_fail():
     error.
     When this function returns, [send_queue] is empty.
     """
+    clear_info()
+
     global encountered_dots, error_at, info_msg
 
     encoding = vim.eval('&fileencoding') or 'utf-8'

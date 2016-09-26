@@ -154,7 +154,10 @@ def ignore_sigint():
     signal.signal(signal.SIGINT, signal.SIG_IGN)
 
 def escape(cmd):
-    return cmd.replace("&nbsp;", ' ').replace("&apos;", '\'').replace("&#40;", '(').replace("/&#41;", ')')
+    return cmd.replace("&nbsp;", ' ') \
+              .replace("&apos;", '\'') \
+              .replace("&#40;", '(') \
+              .replace("&#41;", ')')
 
 def get_answer():
     acc = ''
