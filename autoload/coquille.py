@@ -142,26 +142,18 @@ def coq_raw_query(*args):
 
     encoding = vim.eval("&encoding")
 
-    xml = ET.Element('call')
-    xml.set('val', 'interp')
-    xml.set('id', '0')
-    xml.set('raw', 'true')
-    xml.text = raw_query.decode(encoding)
-
-    send_cmd(xml, encoding)
-    response = get_answer()
+    response = CT.query(raw_query, encoding)
 
     if response is None:
         vim.command("call coquille#KillSession()")
         print('ERROR: the Coq process died')
         return
 
-    if response.get('val') == 'good':
-        optionnal_info = response.find('string')
-        if optionnal_info is not None:
-            info_msg = optionnal_info.text
-    elif response.get('val') == 'fail':
-        info_msg = response.text
+    if isinstance(response, CT.Ok):
+        if response.msg is not None:
+            info_msg = response.msg
+    elif isinstance(response, CT.Err):
+        info_msg = response.err.text
         print("FAIL")
     else:
         print("(ANOMALY) unknown answer: %s" % ET.tostring(response)) # ugly
@@ -336,7 +328,7 @@ def send_until_fail():
             send_queue.clear()
             if isinstance(response, CT.Err):
                 response = response.err
-                info_msg = response.text.strip()
+                info_msg = response.text
                 loc_s = response.get('loc_s')
                 if loc_s is not None:
                     loc_s = int(loc_s)

@@ -259,6 +259,10 @@ def rewind(step = 1):
     states = states[0:idx]
     return call('Edit_at', state_id)
 
+def query(cmd, encoding = 'utf-8'):
+    r = call('Query', (cmd, cur_state()), encoding)
+    return r
+
 def goals():
     return call('Goal', ())
 
@@ -332,5 +336,8 @@ if __name__ == '__main__':
     print_goals()
 
     print(states)
+
+    print query("Print plus_0_r.")
+    print query("Check plus_0_r.")
 
     kill_coqtop()
