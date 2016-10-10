@@ -160,13 +160,11 @@ def escape(cmd):
               .replace("&#41;", ')')
 
 def get_answer():
-    acc = ''
     fd = coqtop.stdout.fileno()
     messageNode = None
     while True:
         try:
             data = os.read(fd, 0x4000)
-            acc += data
             try:
                 elt = ET.fromstring('<coqtoproot>' + escape(data) + '</coqtoproot>')
                 shouldWait = True
