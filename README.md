@@ -1,6 +1,8 @@
 Coquille
 ========
 
+[![Build Status](https://travis-ci.org/the-lambda-church/coquille.svg?branch=pathogen-bundle)](https://travis-ci.org/the-lambda-church/coquille)
+
 Coquille is a vim plugin aiming to bring the interactivity of CoqIDE into your
 favorite editor.
 
@@ -59,7 +61,7 @@ Running query commands
 ----------------------
 
 You can run an arbitrary query command (that is `Check`, `Print`, etc.) by
-calling `:Coq MyCommand foo bar baz` and the result will be displayed in the
+calling `:Coq MyCommand foo bar baz.` and the result will be displayed in the
 Infos panel.
 
 Configuration
