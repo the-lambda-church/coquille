@@ -162,9 +162,10 @@ def escape(cmd):
 def get_answer():
     fd = coqtop.stdout.fileno()
     messageNode = None
+    data = ''
     while True:
         try:
-            data = os.read(fd, 0x4000)
+            data += os.read(fd, 0x4000)
             try:
                 elt = ET.fromstring('<coqtoproot>' + escape(data) + '</coqtoproot>')
                 shouldWait = True
