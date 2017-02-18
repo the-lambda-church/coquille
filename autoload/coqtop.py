@@ -1,7 +1,7 @@
 import os
 import re
 import subprocess
-import xml.etree.ElementTree as ET
+import xml.etree.cElementTree as ET
 import signal
 
 from collections import deque, namedtuple
@@ -165,7 +165,7 @@ def get_answer():
     data = ''
     while True:
         try:
-            data += os.read(fd, 0x4000)
+            data += os.read(fd, 0x10000)
             try:
                 elt = ET.fromstring('<coqtoproot>' + escape(data) + '</coqtoproot>')
                 shouldWait = True
