@@ -182,7 +182,7 @@ def get_answer():
                     vp = parse_response(valueNode)
                     if messageNode is not None:
                         if isinstance(vp, Ok):
-                            return Ok(vp.val, parse_value(messageNode))
+                            return Ok(vp.val, parse_value(messageNode).val)
                     return vp
             except ET.ParseError:
                 continue
