@@ -161,7 +161,6 @@ def escape(cmd):
 
 def get_answer():
     fd = coqtop.stdout.fileno()
-    messageNode = None
     data = ''
     while True:
         try:
@@ -170,19 +169,23 @@ def get_answer():
                 elt = ET.fromstring('<coqtoproot>' + escape(data) + '</coqtoproot>')
                 shouldWait = True
                 valueNode = None
+                messageNode = None
                 for c in elt:
                     if c.tag == 'value':
                         shouldWait = False
                         valueNode = c
                     if c.tag == 'message':
-                        messageNode = c[2]
+                        if messageNode is not None:
+                            messageNode = messageNode + "\n\n" + parse_value(c[2])
+                        else:
+                            messageNode = parse_value(c[2])
                 if shouldWait:
                     continue
                 else:
                     vp = parse_response(valueNode)
                     if messageNode is not None:
                         if isinstance(vp, Ok):
-                            return Ok(vp.val, parse_value(messageNode))
+                            return Ok(vp.val, messageNode)
                     return vp
             except ET.ParseError:
                 continue
