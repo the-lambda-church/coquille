@@ -175,14 +175,14 @@ def get_answer():
                         shouldWait = False
                         valueNode = c
                     if c.tag == 'message':
-                        messageNode = c[1]
+                        messageNode = c[2]
                 if shouldWait:
                     continue
                 else:
                     vp = parse_response(valueNode)
                     if messageNode is not None:
                         if isinstance(vp, Ok):
-                            return Ok(vp.val, parse_value(messageNode).val)
+                            return Ok(vp.val, parse_value(messageNode))
                     return vp
             except ET.ParseError:
                 continue
