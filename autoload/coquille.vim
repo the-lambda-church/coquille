@@ -5,10 +5,22 @@ if !exists('coquille_auto_move')
     let g:coquille_auto_move="false"
 endif
 
+try
+    py import sys, vim
+catch /E319:/
+    if !exists('s:warned')
+        echo "vim doesn't support python. Turn off coquille"
+        let s:warned = 1
+    endif
+    function! coquille#Register()
+    endfunction
+    finish
+endtry
+
+
 " Load vimbufsync if not already done
 call vimbufsync#init()
 
-py import sys, vim
 py if not vim.eval("s:current_dir") in sys.path:
 \    sys.path.append(vim.eval("s:current_dir")) 
 py import coquille
